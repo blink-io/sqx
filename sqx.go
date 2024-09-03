@@ -5,8 +5,15 @@ import (
 )
 
 const (
-	DialectSQLite    = sq.DialectSQLite
-	DialectPostgres  = sq.DialectPostgres
 	DialectMySQL     = sq.DialectMySQL
+	DialectPostgres  = sq.DialectPostgres
+	DialectSQLite    = sq.DialectSQLite
 	DialectSQLServer = sq.DialectSQLServer
+)
+
+var (
+	MySQL     = sq.MySQL
+	Postgres  = sq.Postgres
+	SQLite    = sq.SQLite
+	SQLServer = sq.SQLServer
 )

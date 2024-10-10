@@ -1,19 +1,34 @@
 package sqx
 
 import (
+	"log/slog"
+	"strings"
+
 	"github.com/bokwoon95/sq"
 )
 
-const (
-	DialectMySQL     = sq.DialectMySQL
-	DialectPostgres  = sq.DialectPostgres
-	DialectSQLite    = sq.DialectSQLite
-	DialectSQLServer = sq.DialectSQLServer
+type (
+	DB        = sq.DB
+	Predicate = sq.Predicate
+	Query     = sq.Query
+	Row       = sq.Row
+	SQLWriter = sq.SQLWriter
+
+	JSONMap map[string]any
 )
 
-var (
-	MySQL     = sq.MySQL
-	Postgres  = sq.Postgres
-	SQLite    = sq.SQLite
-	SQLServer = sq.SQLServer
-)
+func SetDefaultDialect(dialect string) {
+	switch dialect := strings.ToLower(dialect); dialect {
+	case sq.DialectPostgres,
+		sq.DialectSQLite,
+		sq.DialectSQLServer,
+		sq.DialectMySQL:
+		sq.DefaultDialect.Store(&dialect)
+	default:
+		slog.Warn("")
+	}
+}
+
+func UnsetDefaultDialect() {
+	sq.DefaultDialect.Store(nil)
+}

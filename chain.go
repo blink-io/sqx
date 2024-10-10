@@ -99,12 +99,10 @@ func (c Chain) Extend(chain Chain) Chain {
 	return c.Append(chain.constructors...)
 }
 
-func ChainFunc(db sq.DB, cs ...Constructor) sq.DB {
-	if db != nil {
-		for _, f := range cs {
-			db = f(db)
-		}
+func ChainFunc(db sq.DB, constructors ...Constructor) sq.DB {
+	if len(constructors) == 0 || db == nil {
 		return db
 	}
-	return nil
+	chain := NewChain(constructors...)
+	return chain.Then(db)
 }

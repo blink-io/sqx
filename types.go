@@ -23,22 +23,22 @@ var (
 )
 
 type (
-	InsertMapper func() sq.InsertQuery
+	InsertQ func() sq.InsertQuery
 
-	UpdateMapper func() sq.UpdateQuery
+	UpdateQ func() sq.UpdateQuery
 
-	DeleteMapper func() sq.DeleteQuery
+	DeleteQ func() sq.DeleteQuery
 
-	SelectMapper[T any] func() (sq.SelectQuery, func(*sq.Row) T)
+	SelectQ[T any] func() (sq.SelectQuery, func(*sq.Row) T)
 
 	Mapper[T sq.Table, M any, S any] interface {
 		Table() T
 
-		InsertT(context.Context, ...S) func(*sq.Column)
+		InsertT(ctx context.Context, ss ...S) func(*sq.Column)
 
-		UpdateT(context.Context, S) func(*sq.Column)
+		UpdateT(ctx context.Context, s S) func(*sq.Column)
 
-		SelectT(context.Context) func(*sq.Row) M
+		SelectT(ctx context.Context) func(*sq.Row) M
 	}
 
 	Executor[M any, S any] interface {

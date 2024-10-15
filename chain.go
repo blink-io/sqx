@@ -44,8 +44,6 @@ func NewChain(constructors ...Constructor) Chain {
 // and thus several instances of the same middleware will be created
 // when a chain is reused in this way.
 // For proper middleware, this should cause no problems.
-//
-// Then() treats nil as http.DefaultServeMux.
 func (c Chain) Then(db sq.DB) sq.DB {
 	if db != nil {
 		for i := range c.constructors {

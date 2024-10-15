@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	QueryEvent struct {
+	HookEvent struct {
 		DB *DB
 
 		Query     string
@@ -21,18 +21,18 @@ type (
 		Stash map[any]any
 	}
 
-	QueryHook interface {
-		BeforeQuery(context.Context, *QueryEvent) context.Context
-		AfterQuery(context.Context, *QueryEvent)
+	Hook interface {
+		BeforeQuery(context.Context, *HookEvent) context.Context
+		AfterQuery(context.Context, *HookEvent)
 	}
 
 	hookDB struct {
 		sq.DB
-		hooks []QueryHook
+		hooks []Hook
 	}
 )
 
-func Hooks(db sq.DB, hooks ...QueryHook) interface {
+func Hooks(db sq.DB, hooks ...Hook) interface {
 	sq.DB
 } {
 	return hookDB{DB: db, hooks: hooks}
@@ -56,12 +56,12 @@ func (db hookDB) PrepareContext(ctx context.Context, query string) (*sql.Stmt, e
 	return db.DB.PrepareContext(ctx, query)
 }
 
-func (db hookDB) beforeQuery(ctx context.Context, query string, args ...any) (context.Context, *QueryEvent) {
+func (db hookDB) beforeQuery(ctx context.Context, query string, args ...any) (context.Context, *HookEvent) {
 	if len(db.hooks) == 0 {
 		return ctx, nil
 	}
 
-	event := &QueryEvent{
+	event := &HookEvent{
 		Query: query,
 		Args:  args,
 
@@ -77,7 +77,7 @@ func (db hookDB) beforeQuery(ctx context.Context, query string, args ...any) (co
 
 func (db hookDB) afterQuery(
 	ctx context.Context,
-	event *QueryEvent,
+	event *HookEvent,
 	res sql.Result,
 	err error,
 ) {
@@ -91,9 +91,9 @@ func (db hookDB) afterQuery(
 	db.afterQueryFromIndex(ctx, event, len(db.hooks)-1)
 }
 
-var _ QueryHook = logHook{}
+var _ Hook = logHook{}
 
-func (db hookDB) afterQueryFromIndex(ctx context.Context, event *QueryEvent, hookIndex int) {
+func (db hookDB) afterQueryFromIndex(ctx context.Context, event *HookEvent, hookIndex int) {
 	for ; hookIndex >= 0; hookIndex-- {
 		db.hooks[hookIndex].AfterQuery(ctx, event)
 	}
@@ -103,12 +103,12 @@ type logHook struct {
 	logf func(ctx context.Context, format string, args ...any)
 }
 
-func (l logHook) BeforeQuery(ctx context.Context, event *QueryEvent) context.Context {
+func (l logHook) BeforeQuery(ctx context.Context, event *HookEvent) context.Context {
 	l.logf(ctx, event.Query, event.Args...)
 	return ctx
 }
 
-func (l logHook) AfterQuery(ctx context.Context, event *QueryEvent) {
+func (l logHook) AfterQuery(ctx context.Context, event *HookEvent) {
 	if event.Err != nil {
 		l.logf(ctx, "[logHook] Query failed: %s\n", event.Err)
 	} else {

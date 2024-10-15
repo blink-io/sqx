@@ -9,6 +9,7 @@ import (
 
 type (
 	DB        = sq.DB
+	DBX       = TxDB
 	Predicate = sq.Predicate
 	Query     = sq.Query
 	Row       = sq.Row
@@ -25,7 +26,7 @@ func SetDefaultDialect(dialect string) {
 		sq.DialectMySQL:
 		sq.DefaultDialect.Store(&dialect)
 	default:
-		slog.Warn("")
+		slog.Warn("unsupported dialect")
 	}
 }
 

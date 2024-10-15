@@ -18,7 +18,7 @@ type (
 		Txer
 	}
 
-	runInTxer interface {
+	RunInTxer interface {
 		RunInTx(context.Context, *sql.TxOptions, func(context.Context, sq.DB) error) error
 	}
 
@@ -33,13 +33,13 @@ func (db inTxDB) RunInTx(ctx context.Context, opts *sql.TxOptions, fn func(conte
 
 func InTx(db TxDB) interface {
 	TxDB
-	runInTxer
+	RunInTxer
 } {
 	return inTxDB{TxDB: db}
 }
 
 func RunInTx(ctx context.Context,
-	db Txer, opts *sql.TxOptions, fn func(context.Context, sq.DB) error) error {
+	db TxDB, opts *sql.TxOptions, fn func(context.Context, sq.DB) error) error {
 	tx, err := db.BeginTx(ctx, opts)
 	if err != nil {
 		return err

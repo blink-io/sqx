@@ -13,6 +13,14 @@ import (
 
 var ctx = context.Background()
 
+func MustGetSQLite() *sql.DB {
+	dsn := "file:test.db?cache=shared&mode=memory"
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
 func TestDefaultDialect_1(t *testing.T) {
 	dd := sq.DialectMySQL
 	SetDefaultDialect(dd)
@@ -32,18 +40,38 @@ func TestInTxDB_1(t *testing.T) {
 	txdb := InTx(db)
 
 	err = txdb.RunInTx(ctx, nil, func(ctx context.Context, db sq.DB) error {
-		q := sq.Queryf("select sqlite_version() as ver")
-
-		ver, err := sq.FetchOne(sq.Log(db), q, func(r *sq.Row) string {
-			return r.String("ver")
-		})
-
-		if err != nil {
-			return nil
-		}
-
-		fmt.Println("sqlite version: ", ver)
-		return nil
+		return querySQLiteVersion(ctx, db)
 	})
+	require.NoError(t, err)
+}
+
+func querySQLiteVersion(ctx context.Context, db sq.DB) error {
+	q := sq.Queryf("select sqlite_version() as ver")
+
+	ver, err := sq.FetchOne(sq.Log(db), q, func(r *sq.Row) string {
+		return r.String("ver")
+	})
+
+	if err != nil {
+		return nil
+	}
+
+	fmt.Println("sqlite version: ", ver)
+
+	return nil
+}
+
+func TestHookDB_1(t *testing.T) {
+	dsn := "file:test.db?cache=shared&mode=memory"
+	db, err := sql.Open("sqlite", dsn)
+	require.NoError(t, err)
+
+	hdb := Hooks(sq.Log(db), logHook{
+		logf: func(ctx context.Context, format string, args ...any) {
+			fmt.Printf(format, args...)
+		},
+	})
+
+	err = querySQLiteVersion(ctx, hdb)
 	require.NoError(t, err)
 }

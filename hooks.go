@@ -81,13 +81,6 @@ func (db hookDB) afterQuery(
 	res sql.Result,
 	err error,
 ) {
-	switch err {
-	case nil, sql.ErrNoRows:
-		// nothing
-	default:
-		//atomic.AddUint32(&db.stats.Errors, 1)
-	}
-
 	if event == nil {
 		return
 	}
@@ -98,8 +91,27 @@ func (db hookDB) afterQuery(
 	db.afterQueryFromIndex(ctx, event, len(db.hooks)-1)
 }
 
+var _ QueryHook = logHook{}
+
 func (db hookDB) afterQueryFromIndex(ctx context.Context, event *QueryEvent, hookIndex int) {
 	for ; hookIndex >= 0; hookIndex-- {
 		db.hooks[hookIndex].AfterQuery(ctx, event)
+	}
+}
+
+type logHook struct {
+	logf func(ctx context.Context, format string, args ...any)
+}
+
+func (l logHook) BeforeQuery(ctx context.Context, event *QueryEvent) context.Context {
+	l.logf(ctx, event.Query, event.Args...)
+	return ctx
+}
+
+func (l logHook) AfterQuery(ctx context.Context, event *QueryEvent) {
+	if event.Err != nil {
+		l.logf(ctx, "[logHook] Query failed: %s\n", event.Err)
+	} else {
+		l.logf(ctx, "[logHook] Query completed in %s\n", event.StartTime)
 	}
 }

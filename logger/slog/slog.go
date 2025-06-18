@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/bokwoon95/sq"
+	"github.com/blink-io/sq"
 )
 
 type logger struct {
@@ -14,9 +14,9 @@ type logger struct {
 	cfg sq.LoggerConfig
 }
 
-var _ sq.SqLogger = (*logger)(nil)
+var _ sq.Logger = (*logger)(nil)
 
-func New(sl *slog.Logger, lv slog.Leveler, cfg sq.LoggerConfig) sq.SqLogger {
+func New(sl *slog.Logger, lv slog.Leveler, cfg sq.LoggerConfig) sq.Logger {
 	return &logger{
 		ctx: context.Background(),
 		sl:  sl,
@@ -25,14 +25,14 @@ func New(sl *slog.Logger, lv slog.Leveler, cfg sq.LoggerConfig) sq.SqLogger {
 	}
 }
 
-func (l *logger) SqLogSettings(ctx context.Context, settings *sq.LogSettings) {
+func (l *logger) LogSettings(ctx context.Context, settings *sq.LogSettings) {
 	settings.LogAsynchronously = l.cfg.LogAsynchronously
 	settings.IncludeTime = l.cfg.ShowTimeTaken
 	settings.IncludeCaller = l.cfg.ShowCaller
 	settings.IncludeResults = l.cfg.ShowResults
 }
 
-func (l *logger) SqLogQuery(ctx context.Context, stats sq.QueryStats) {
+func (l *logger) LogQuery(ctx context.Context, stats sq.QueryStats) {
 	attrs := []slog.Attr{
 		slog.String("dialect", stats.Dialect),
 		slog.String("query", stats.Query),

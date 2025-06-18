@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bokwoon95/sq"
+	"github.com/blink-io/sq"
 	"github.com/stretchr/testify/require"
 	_ "modernc.org/sqlite"
 )

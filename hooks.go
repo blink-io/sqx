@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/bokwoon95/sq"
+	"github.com/blink-io/sq"
 )
 
 type (

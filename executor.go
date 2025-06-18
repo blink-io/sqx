@@ -3,7 +3,7 @@ package sqx
 import (
 	"context"
 
-	"github.com/bokwoon95/sq"
+	"github.com/blink-io/sq"
 )
 
 var _ Executor[any, any] = executor[sq.Table, any, any]{}

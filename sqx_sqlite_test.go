@@ -43,8 +43,7 @@ func TestDefaultDialect_1(t *testing.T) {
 	SetDefaultDialect(dd)
 
 	fmt.Println("dialect before: ", *sq.DefaultDialect.Load())
-	UnsetDefaultDialect()
-	UnsetDefaultDialect()
+	RestoreDefaultDialect()
 
 	fmt.Println("dialect after: ", *sq.DefaultDialect.Load())
 }

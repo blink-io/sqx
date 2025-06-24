@@ -1,9 +1,11 @@
 module github.com/blink-io/sqx
 
-go 1.23.0
+go 1.24.0
+
+toolchain go1.24.4
 
 require (
-	github.com/blink-io/sq v0.0.0-20250617163447-a3ad4c8b3a49
+	github.com/blink-io/sq v0.0.0-20250624063123-32a8e6adbfc5
 	github.com/proullon/ramsql v0.1.4
 	github.com/stretchr/testify v1.10.0
 	modernc.org/sqlite v1.38.0

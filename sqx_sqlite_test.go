@@ -25,7 +25,7 @@ func MustGetSQLite() *sql.DB {
 func querySQLiteVersion(ctx context.Context, db sq.DB) error {
 	q := sq.Queryf("select sqlite_version() as ver")
 
-	ver, err := sq.FetchOne(sq.Log(db), q, func(r *sq.Row) string {
+	ver, err := sq.FetchOne(sq.Log(db), q, func(ctx context.Context, r *sq.Row) string {
 		return r.String("ver")
 	})
 

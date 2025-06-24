@@ -29,16 +29,16 @@ type (
 
 	DeleteQ func() sq.DeleteQuery
 
-	SelectQ[T any] func() (sq.SelectQuery, func(*sq.Row) T)
+	SelectQ[T any] func() (sq.SelectQuery, sq.RowMapper[T])
 
 	Mapper[T sq.Table, M any, S any] interface {
 		Table() T
 
-		InsertT(ctx context.Context, ss ...S) func(*sq.Column)
+		InsertT(ctx context.Context, ss ...S) sq.ColumnMapper
 
-		UpdateT(ctx context.Context, s S) func(*sq.Column)
+		UpdateT(ctx context.Context, s S) sq.ColumnMapper
 
-		SelectT(ctx context.Context) func(*sq.Row) M
+		SelectT(ctx context.Context) sq.RowMapper[M]
 	}
 
 	Executor[M any, S any] interface {

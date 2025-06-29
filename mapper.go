@@ -23,7 +23,10 @@ type (
 
 	TableFunc[M any, S any] interface {
 		ColumnMapper(ss ...S) sq.ColumnMapper
-		RowMapper() sq.RowMapper[M]
+
+		RowMapper(context.Context, *sq.Row) M
+
+		RowMapperFunc() sq.RowMapper[M]
 	}
 
 	mapper[T MapperTable[M, S], M any, S any] struct {
@@ -44,7 +47,7 @@ func (m mapper[T, M, S]) UpdateT(ctx context.Context, s S) sq.ColumnMapper {
 }
 
 func (m mapper[T, M, S]) SelectT(ctx context.Context) sq.RowMapper[M] {
-	return m.t.RowMapper()
+	return m.t.RowMapper
 }
 
 func NewMapper[T MapperTable[M, S], M any, S any](t T) Mapper[T, M, S] {

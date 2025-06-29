@@ -49,11 +49,11 @@ func (e executor[T, M, S]) One(ctx context.Context, db sq.DB, where sq.Predicate
 	q := sq.From(e.t).
 		Where(where).
 		Limit(1)
-	return sq.FetchOneContext[M](ctx, db, q, e.t.RowMapper())
+	return sq.FetchOneContext[M](ctx, db, q, e.t.RowMapper)
 }
 
 func (e executor[T, M, S]) All(ctx context.Context, db sq.DB, where sq.Predicate) ([]M, error) {
 	q := sq.From(e.t).
 		Where(where)
-	return sq.FetchAllContext[M](ctx, db, q, e.t.RowMapper())
+	return sq.FetchAllContext[M](ctx, db, q, e.t.RowMapper)
 }

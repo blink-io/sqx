@@ -6,44 +6,54 @@ import (
 	"github.com/blink-io/sq"
 )
 
-var _ Executor[any, any] = executor[sq.Table, any, any]{}
+type Executor[M any, S any] interface {
+	Insert(ctx context.Context, db sq.DB, ss ...S) (sq.Result, error)
 
-type executor[T sq.Table, M any, S any] struct {
-	m Mapper[T, M, S]
+	Update(ctx context.Context, db sq.DB, where sq.Predicate, s S) (sq.Result, error)
+
+	Delete(ctx context.Context, db sq.DB, where sq.Predicate) (sq.Result, error)
+
+	One(ctx context.Context, db sq.DB, where sq.Predicate) (M, error)
+
+	All(ctx context.Context, db sq.DB, where sq.Predicate) ([]M, error)
 }
 
-func NewExecutor[T sq.Table, M any, S any](m Mapper[T, M, S]) Executor[M, S] {
-	return executor[T, M, S]{m: m}
+type executor[T MapperTable[M, S], M any, S any] struct {
+	t T
+}
+
+func NewExecutor[T MapperTable[M, S], M any, S any](t T) Executor[M, S] {
+	return executor[T, M, S]{t: t}
 }
 
 func (e executor[T, M, S]) Insert(ctx context.Context, db sq.DB, ss ...S) (sq.Result, error) {
-	q := sq.InsertInto(e.m.Table()).
-		ColumnValues(e.m.InsertT(ctx, ss...))
+	q := sq.InsertInto(e.t).
+		ColumnValues(e.t.ColumnMapper(ss...))
 	return sq.ExecContext(ctx, db, q)
 }
 
 func (e executor[T, M, S]) Update(ctx context.Context, db sq.DB, where sq.Predicate, s S) (sq.Result, error) {
-	q := sq.Update(e.m.Table()).
-		SetFunc(e.m.UpdateT(ctx, s)).
+	q := sq.Update(e.t).
+		SetFunc(e.t.ColumnMapper(s)).
 		Where(where)
 	return sq.ExecContext(ctx, db, q)
 }
 
 func (e executor[T, M, S]) Delete(ctx context.Context, db sq.DB, where sq.Predicate) (sq.Result, error) {
-	q := sq.DeleteFrom(e.m.Table()).
+	q := sq.DeleteFrom(e.t).
 		Where(where)
 	return sq.ExecContext(ctx, db, q)
 }
 
 func (e executor[T, M, S]) One(ctx context.Context, db sq.DB, where sq.Predicate) (M, error) {
-	q := sq.From(e.m.Table()).
+	q := sq.From(e.t).
 		Where(where).
 		Limit(1)
-	return sq.FetchOneContext[M](ctx, db, q, e.m.SelectT(ctx))
+	return sq.FetchOneContext[M](ctx, db, q, e.t.RowMapper())
 }
 
 func (e executor[T, M, S]) All(ctx context.Context, db sq.DB, where sq.Predicate) ([]M, error) {
-	q := sq.From(e.m.Table()).
+	q := sq.From(e.t).
 		Where(where)
-	return sq.FetchAllContext[M](ctx, db, q, e.m.SelectT(ctx))
+	return sq.FetchAllContext[M](ctx, db, q, e.t.RowMapper())
 }

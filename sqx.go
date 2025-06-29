@@ -30,6 +30,7 @@ func SetDefaultDialect(dialect string) {
 	}
 }
 
-func UnsetDefaultDialect() {
+// RestoreDefaultDialect restores default dialect as unset.
+func RestoreDefaultDialect() {
 	sq.DefaultDialect.Store(nil)
 }

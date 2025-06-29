@@ -22,12 +22,12 @@ type (
 		RunInTx(context.Context, *sql.TxOptions, func(context.Context, sq.DB) error) error
 	}
 
-	inTxDB struct {
+	txDB struct {
 		TxDB
 	}
 )
 
-func (db inTxDB) RunInTx(ctx context.Context, opts *sql.TxOptions, fn func(context.Context, sq.DB) error) error {
+func (db txDB) RunInTx(ctx context.Context, opts *sql.TxOptions, fn func(context.Context, sq.DB) error) error {
 	return RunInTx(ctx, db, opts, fn)
 }
 
@@ -35,11 +35,10 @@ func InTx(db TxDB) interface {
 	TxDB
 	RunInTxer
 } {
-	return inTxDB{TxDB: db}
+	return txDB{TxDB: db}
 }
 
-func RunInTx(ctx context.Context,
-	db TxDB, opts *sql.TxOptions, fn func(context.Context, sq.DB) error) error {
+func RunInTx(ctx context.Context, db TxDB, opts *sql.TxOptions, fn func(context.Context, sq.DB) error) error {
 	tx, err := db.BeginTx(ctx, opts)
 	if err != nil {
 		return err

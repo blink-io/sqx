@@ -6,6 +6,17 @@ import (
 	"github.com/blink-io/sq"
 )
 
+type Table[M any, S any] interface {
+	sq.Table
+	TableFunc[M, S]
+}
+
+type TableFunc[M any, S any] interface {
+	ColumnMapper(ss ...S) sq.ColumnMapper
+
+	RowMapper(context.Context, *sq.Row) M
+}
+
 type Executor[M any, S any] interface {
 	Insert(ctx context.Context, db sq.DB, ss ...S) (sq.Result, error)
 
@@ -18,11 +29,11 @@ type Executor[M any, S any] interface {
 	All(ctx context.Context, db sq.DB, where sq.Predicate) ([]M, error)
 }
 
-type executor[T MapperTable[M, S], M any, S any] struct {
+type executor[T Table[M, S], M any, S any] struct {
 	t T
 }
 
-func NewExecutor[T MapperTable[M, S], M any, S any](t T) Executor[M, S] {
+func NewExecutor[T Table[M, S], M any, S any](t T) Executor[M, S] {
 	return executor[T, M, S]{t: t}
 }
 

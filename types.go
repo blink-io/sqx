@@ -27,5 +27,5 @@ type (
 
 	DeleteQ func() sq.DeleteQuery
 
-	SelectQ[T any] func() (sq.SelectQuery, func(*sq.Row) T)
+	SelectQ[T any] func() (sq.SelectQuery, sq.RowMapper[T])
 )

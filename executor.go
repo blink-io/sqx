@@ -17,7 +17,7 @@ type TableFunc[M any, S any] interface {
 	RowMapper(context.Context, *sq.Row) M
 }
 
-type Executor[M any, S any] interface {
+type Executor[T Table[M, S], M any, S any] interface {
 	Insert(ctx context.Context, db sq.DB, ss ...S) (sq.Result, error)
 
 	Update(ctx context.Context, db sq.DB, where sq.Predicate, s S) (sq.Result, error)
@@ -27,13 +27,15 @@ type Executor[M any, S any] interface {
 	One(ctx context.Context, db sq.DB, where sq.Predicate) (M, error)
 
 	All(ctx context.Context, db sq.DB, where sq.Predicate) ([]M, error)
+
+	Table() T[M, S]
 }
 
 type executor[T Table[M, S], M any, S any] struct {
 	t T
 }
 
-func NewExecutor[T Table[M, S], M any, S any](t T) Executor[M, S] {
+func NewExecutor[T Table[M, S], M any, S any](t T) Executor[T, M, S] {
 	return executor[T, M, S]{t: t}
 }
 
@@ -41,6 +43,10 @@ func (e executor[T, M, S]) Insert(ctx context.Context, db sq.DB, ss ...S) (sq.Re
 	q := sq.InsertInto(e.t).
 		ColumnValues(e.t.ColumnMapper(ss...))
 	return sq.ExecContext(ctx, db, q)
+}
+
+func (e executor[T, M, S]) Table() T[M, S] {
+	return e.t
 }
 
 func (e executor[T, M, S]) Update(ctx context.Context, db sq.DB, where sq.Predicate, s S) (sq.Result, error) {

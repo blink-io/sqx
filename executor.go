@@ -28,7 +28,7 @@ type Executor[T Table[M, S], M any, S any] interface {
 
 	All(ctx context.Context, db sq.DB, where sq.Predicate) ([]M, error)
 
-	Table() T[M, S]
+	Table() T
 }
 
 type executor[T Table[M, S], M any, S any] struct {
@@ -45,7 +45,7 @@ func (e executor[T, M, S]) Insert(ctx context.Context, db sq.DB, ss ...S) (sq.Re
 	return sq.ExecContext(ctx, db, q)
 }
 
-func (e executor[T, M, S]) Table() T[M, S] {
+func (e executor[T, M, S]) Table() T {
 	return e.t
 }
 
